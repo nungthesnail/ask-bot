@@ -13,4 +13,7 @@ public static class TextRes
     public const string QuestionStopped = "QuestionStopped";
     public const string QuestionStopHelp = "QuestionStopHelp";
     public const string OnlyTextAllowed = "OnlyTextAllowed";
+    public const string NoTokens = "NoTokens";
+    public const string Info = "Info";
+    public const string GiftToken = "GiftToken";
 }

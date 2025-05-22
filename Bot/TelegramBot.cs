@@ -44,19 +44,20 @@ public sealed class TelegramBot : ITelegramBot
 
         try
         {
-            if (!_users.ContainsKey(chatId))
+            User? user;
+            if (!_users.TryGetValue(chatId, out user))
             {
-                var newUser = new User
+                user = new User
                 {
                     ChatId = chatId,
                     State = UserState.Waiting
                 };
-                _users.TryAdd(chatId, newUser);
+                _users.TryAdd(chatId, user);
             }
 
             if (HaveToSendHello(message))
             {
-                var helpMessage = _resourceManager.Get(TextRes.Hello);
+                var helpMessage = _resourceManager.Get(TextRes.Hello, user.TokenCount);
 
                 var keyboard = new ReplyKeyboardMarkup([
                     ["/ask", "/answer"],
@@ -66,10 +67,16 @@ public sealed class TelegramBot : ITelegramBot
                     ResizeKeyboard = true
                 };
                 await _botClient.SendMessage(chatId, helpMessage, replyMarkup: keyboard);
+                return;
             }
 
-            var user = _users[chatId];
-
+            if (HaveToSendInfo(message))
+            {
+                await _botClient.SendMessage(user.ChatId, _resourceManager.Get(
+                    TextRes.Info, user.TokenCount, user.ChatId));
+                return;
+            }
+            
             switch (user.State)
             {
                 case UserState.Waiting:
@@ -95,7 +102,7 @@ public sealed class TelegramBot : ITelegramBot
             await SendFaultMessage(message);
         }
     }
-
+    
     private async Task<bool> ValidateMessage(Message message)
     {
         if (message.Type == MessageType.Text && message.Text is not null) return false;
@@ -105,6 +112,9 @@ public sealed class TelegramBot : ITelegramBot
 
     private static bool HaveToSendHello(Message message)
         => message.Text is not null && message.Text.StartsWith("/start", StringComparison.Ordinal);
+    
+    private bool HaveToSendInfo(Message message)
+        => message.Text is not null && message.Text.StartsWith("/info", StringComparison.Ordinal);
 
     private async Task SendFaultMessage(Message message)
     {
@@ -122,7 +132,14 @@ public sealed class TelegramBot : ITelegramBot
         // Обработка команды /ask и /answer
         if (message.Text.StartsWith("/ask", StringComparison.Ordinal))
         {
+            // Checking that user have tokens
+            if (user.TokenCount <= 0)
+            {
+                await _botClient.SendMessage(user.ChatId, _resourceManager.Get(TextRes.NoTokens));
+                return;
+            }
             user.State = UserState.InputtingQuestion;
+            user.TokenCount--;
             await _botClient.SendMessage(user.ChatId, _resourceManager.Get(TextRes.InputQuestion));
         }
         else if (message.Text.StartsWith("/answer", StringComparison.Ordinal))
@@ -137,6 +154,11 @@ public sealed class TelegramBot : ITelegramBot
             else
             {
                 await _botClient.SendMessage(user.ChatId, _resourceManager.Get(TextRes.NoQuestions));
+                if (user.TokenCount <= 0)
+                {
+                    user.TokenCount++;
+                    await _botClient.SendMessage(user.ChatId, _resourceManager.Get(TextRes.GiftToken));
+                }
             }
         }
     }
@@ -170,6 +192,7 @@ public sealed class TelegramBot : ITelegramBot
             await _botClient.SendMessage(user.AnswerToChatId.Value,
                 _resourceManager.Get(TextRes.Answer, message.Text));
             user.State = UserState.Waiting;
+            user.TokenCount++;
             await _botClient.SendMessage(user.ChatId, _resourceManager.Get(TextRes.AnswerSent));
         }
     }
