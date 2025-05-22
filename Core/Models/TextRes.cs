@@ -12,4 +12,5 @@ public static class TextRes
     public const string AnswerSent = "AnswerSent";
     public const string QuestionStopped = "QuestionStopped";
     public const string QuestionStopHelp = "QuestionStopHelp";
+    public const string OnlyTextAllowed = "OnlyTextAllowed";
 }

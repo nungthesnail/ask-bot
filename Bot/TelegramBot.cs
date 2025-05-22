@@ -37,6 +37,9 @@ public sealed class TelegramBot : ITelegramBot
 
     private async Task BotOnMessageReceived(Message message, UpdateType updateType)
     {
+        var err = await ValidateMessage(message);
+        if (err)
+            return;
         var chatId = message.Chat.Id;
 
         try
@@ -91,6 +94,13 @@ public sealed class TelegramBot : ITelegramBot
             Console.WriteLine($"Something failed: {exc}");
             await SendFaultMessage(message);
         }
+    }
+
+    private async Task<bool> ValidateMessage(Message message)
+    {
+        if (message.Type == MessageType.Text && message.Text is not null) return false;
+        await _botClient.SendMessage(message.Chat.Id, _resourceManager.Get(TextRes.OnlyTextAllowed));
+        return true;
     }
 
     private static bool HaveToSendHello(Message message)
