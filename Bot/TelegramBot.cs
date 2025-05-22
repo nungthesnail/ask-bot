@@ -6,6 +6,7 @@ using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using System.Configuration;
+using Serilog;
 using Telegram.Bot.Types.ReplyMarkups;
 using User = Core.Models.User;
 
@@ -31,7 +32,7 @@ public sealed class TelegramBot : ITelegramBot
     public async Task StartAsync()
     {
         var me = await _botClient.GetMe();
-        Console.WriteLine($"Bot id: {me.Id}, name: {me.FirstName}.");
+        Log.Information("Bot id: {id}, name: {name}.", me.Id, me.FirstName);
         _botClient.OnMessage += BotOnMessageReceived;
     }
 
@@ -61,7 +62,8 @@ public sealed class TelegramBot : ITelegramBot
 
                 var keyboard = new ReplyKeyboardMarkup([
                     ["/ask", "/answer"],
-                    ["/start"]
+                    ["/start"],
+                    ["/stop"]
                 ])
                 {
                     ResizeKeyboard = true
@@ -69,11 +71,16 @@ public sealed class TelegramBot : ITelegramBot
                 await _botClient.SendMessage(chatId, helpMessage, replyMarkup: keyboard);
                 return;
             }
-
             if (HaveToSendInfo(message))
             {
                 await _botClient.SendMessage(user.ChatId, _resourceManager.Get(
                     TextRes.Info, user.TokenCount, user.ChatId));
+                return;
+            }
+            if (HaveToResetState(message))
+            {
+                user.State = UserState.Waiting;
+                await _botClient.SendMessage(chatId, _resourceManager.Get(TextRes.Hello, user.TokenCount));
                 return;
             }
             
@@ -98,7 +105,7 @@ public sealed class TelegramBot : ITelegramBot
         }
         catch (Exception exc)
         {
-            Console.WriteLine($"Something failed: {exc}");
+            Log.Error("Something failed: {exc}", exc);
             await SendFaultMessage(message);
         }
     }
@@ -115,6 +122,10 @@ public sealed class TelegramBot : ITelegramBot
     
     private bool HaveToSendInfo(Message message)
         => message.Text is not null && message.Text.StartsWith("/info", StringComparison.Ordinal);
+    
+    private bool HaveToResetState(Message message)
+        => message.Text is not null && (message.Text.StartsWith("/stop", StringComparison.Ordinal) ||
+                                        message.Text.StartsWith("/start", StringComparison.Ordinal));
 
     private async Task SendFaultMessage(Message message)
     {
@@ -175,7 +186,7 @@ public sealed class TelegramBot : ITelegramBot
         user.State = UserState.WaitingForAnswers;
         user.QuestionId = questionId;
         await _botClient.SendMessage(user.ChatId, _resourceManager.Get(TextRes.QuestionCreated));
-        Console.WriteLine("User chat {0} created a question {1}: {2}", message.Chat.Id, questionId, message.Text);
+        Log.Debug("User chat {chatId} created question {qId}: {text}", message.Chat.Id, questionId, message.Text);
     }
 
     private async Task HandleInputtingAnswer(Message message, User user)
@@ -213,7 +224,7 @@ public sealed class TelegramBot : ITelegramBot
                 _questionStorage.DeleteQuestion(user.QuestionId.Value);
             }
             await _botClient.SendMessage(user.ChatId, _resourceManager.Get(TextRes.QuestionStopped));
-            Console.WriteLine("User chat {0} stopped question {1}", message.Chat.Id, user.QuestionId);
+            Log.Debug("User chat {id} stopped question {qId}", message.Chat.Id, user.QuestionId);
             user.QuestionId = null;
         }
         else
