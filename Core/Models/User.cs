@@ -2,10 +2,8 @@
 
 public class User
 {
-    public int Id { get; set; }
-    public long TelegramId { get; set; }
-    public int? CurrentReplyingAskingId { get; set; }
-    
-    public List<Asking>? Askings { get; set; }
-    public List<Reply>? Replies { get; set; }
+    public long ChatId { get; set; }
+    public UserState State { get; set; }
+    public long? QuestionId { get; set; }
+    public long? AnswerToChatId { get; set; }
 }
