@@ -74,10 +74,10 @@ public sealed class TelegramBot : ITelegramBot
             if (HaveToSendInfo(message))
             {
                 await _botClient.SendMessage(user.ChatId, _resourceManager.Get(
-                    TextRes.Info, user.TokenCount, user.ChatId));
+                    TextRes.Info, user.TokenCount, user.ChatId, _users.Count, _questionStorage.CountQuestions()));
                 return;
             }
-            if (HaveToResetState(message))
+            if (HaveToResetState(message, user))
             {
                 user.State = UserState.Waiting;
                 await _botClient.SendMessage(chatId, _resourceManager.Get(TextRes.Hello, user.TokenCount));
@@ -123,9 +123,10 @@ public sealed class TelegramBot : ITelegramBot
     private bool HaveToSendInfo(Message message)
         => message.Text is not null && message.Text.StartsWith("/info", StringComparison.Ordinal);
     
-    private bool HaveToResetState(Message message)
+    private bool HaveToResetState(Message message, User user)
         => message.Text is not null && (message.Text.StartsWith("/stop", StringComparison.Ordinal) ||
-                                        message.Text.StartsWith("/start", StringComparison.Ordinal));
+                                        message.Text.StartsWith("/start", StringComparison.Ordinal))
+            && user.State != UserState.WaitingForAnswers; // There is special handling of command /stop in that state.
 
     private async Task SendFaultMessage(Message message)
     {

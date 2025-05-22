@@ -27,12 +27,11 @@ public class QuestionStorage : IQuestionStorage
     public Question? GetRandomQuestion()
     {
         var random = new Random();
-        lock (_lock)
-        {
-            return _questions.Count > 0
-                ? _questions[random.Next(_questions.Count)]
-                : null;
-        }
+        // ReSharper disable InconsistentlySynchronizedField
+        return _questions.Count > 0
+            ? _questions[random.Next(_questions.Count)]
+            : null;
+        // ReSharper restore InconsistentlySynchronizedField
     }
 
     public void DeleteQuestion(long questionId)
@@ -44,5 +43,11 @@ public class QuestionStorage : IQuestionStorage
                 return;
             _questions.Remove(question);
         }
+    }
+
+    public int CountQuestions()
+    {
+        // ReSharper disable once InconsistentlySynchronizedField
+        return _questions.Count;
     }
 }
