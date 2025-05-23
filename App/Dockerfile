@@ -6,8 +6,8 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["App/App.csproj", "App/"]
-COPY ["Bot/Bot.csproj", "Bot/"]
 COPY ["Core/Core.csproj", "Core/"]
+COPY ["Bot/Bot.csproj", "Bot/"]
 RUN dotnet restore "App/App.csproj"
 COPY . .
 WORKDIR "/src/App"

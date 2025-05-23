@@ -34,7 +34,7 @@ await bot.StartAsync();
 Log.Information("Press key C for stop...");
 while (true)
 {
-    var key = Console.ReadKey();
-    if (key.Key == ConsoleKey.C)
+    var key = Console.Read();
+    if (key == 'c')
         break;
 }

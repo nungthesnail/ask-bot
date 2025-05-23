@@ -1,0 +1,5 @@
+﻿services:
+  ask-bot-test:
+    image: nungthesnail.cr.cloud.ru/ask-bot:latest
+    environment:
+      BotToken: "BotTokenHere"
