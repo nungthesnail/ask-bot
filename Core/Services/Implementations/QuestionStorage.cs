@@ -45,9 +45,23 @@ public class QuestionStorage : IQuestionStorage
         }
     }
 
+    public void DeleteQuestion(Question question)
+    {
+        lock (_lock)
+        {
+            _questions.Remove(question);
+        }
+    }
+
     public int CountQuestions()
     {
         // ReSharper disable once InconsistentlySynchronizedField
         return _questions.Count;
+    }
+
+    public Question? GetQuestionByChatId(long chatId)
+    {
+        // ReSharper disable once InconsistentlySynchronizedField
+        return _questions.FirstOrDefault(x => x.AskedBy == chatId);
     }
 }

@@ -21,9 +21,14 @@ var resources = configuration.GetSection("Resources").Get<Dictionary<string, str
                 ?? throw new ConfigurationErrorsException("Resources is missing");
 var resourceManager = new ResourceManager(new ReadOnlyDictionary<string, string>(resources));
 var questionStorage = new QuestionStorage();
+var userStorage = new UserStorage();
 
 // Start
-await using var bot = new TelegramBot(questionStorage, resourceManager, configuration);
+await using var bot = new TelegramBot(
+    questionStorage: questionStorage,
+    userStorage: userStorage,
+    resourceManager: resourceManager,
+    config: configuration);
 await bot.StartAsync();
 
 Log.Information("Press key C for stop...");
