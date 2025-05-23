@@ -211,6 +211,7 @@ public sealed class TelegramBot : ITelegramBot
         user.State = UserState.Waiting;
         user.GiftTokensForAnswer();
         await _botClient.SendMessage(user.ChatId, _resourceManager.Get(TextRes.AnswerSent));
+        Log.Debug("User {userId} answered question of chat {questionId}", user.ChatId, user.AnswerToChatId);
 
         // Deleting question
         var question = _questionStorage.GetQuestionByChatId(user.AnswerToChatId.Value);
@@ -218,6 +219,7 @@ public sealed class TelegramBot : ITelegramBot
             return;
         _questionStorage.DeleteQuestion(user.AnswerToChatId.Value);
         await _botClient.SendMessage(user.AnswerToChatId, _resourceManager.Get(TextRes.QuestionExpired));
+        Log.Debug("Question {id} was deleted by the system", question.Id);
     }
 
     private async Task HandleWaitingForAnswers(Message message, User user)
