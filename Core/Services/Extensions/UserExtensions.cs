@@ -4,7 +4,7 @@ namespace Core.Services.Extensions;
 
 public static class UserExtensions
 {
-    private const int QuestionPrice = 2;
+    private const int QuestionPrice = 10;
     private const int RewardAmount = 1;
     
     public static void PayQuestionCreation(this User user)

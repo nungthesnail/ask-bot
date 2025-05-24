@@ -14,9 +14,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Mapster" Version="7.4.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.5" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.5" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
     </ItemGroup>
 
     <ItemGroup>

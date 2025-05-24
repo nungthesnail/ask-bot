@@ -16,5 +16,4 @@ public static class TextRes
     public const string NoTokens = "NoTokens";
     public const string Info = "Info";
     public const string GiftToken = "GiftToken";
-    public const string QuestionExpired = "QuestionExpired";
 }

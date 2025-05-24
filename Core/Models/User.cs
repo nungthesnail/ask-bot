@@ -7,4 +7,11 @@ public class User
     public long? QuestionId { get; set; }
     public long? AnswerToChatId { get; set; }
     public int TokenCount { get; set; } = 1;
+    
+    #region Cached data
+    
+    public DateTimeOffset? CachedAnswerQuestionExpiry { get; set; }
+    public long? CachedAnswerToQuestionId { get; set; }
+    
+    #endregion
 }

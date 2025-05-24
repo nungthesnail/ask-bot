@@ -8,4 +8,7 @@ public static class QuestionExtensions
     
     public static bool HaveToDelete(this Question question)
         => DateTimeOffset.Now - question.CreatedAt > TimeSpan.FromMinutes(LifetimeMinutes);
+    
+    public static DateTimeOffset GetQuestionExpiration(this Question question)
+        => question.CreatedAt.AddMinutes(LifetimeMinutes);
 }
