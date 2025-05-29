@@ -97,15 +97,18 @@ public class ActionController(
 
         // Checking question expiration and deleting it
         var questionExpired = DateTimeOffset.Now > user.CachedAnswerQuestionExpiry;
-        if (!questionExpired)
-            return;
-        
-        var askedUser = userStorage.GetOrCreateUser(user.AnswerToChatId.Value);
-        if (user.QuestionId is not null && user.QuestionId == askedUser.CachedAnswerToQuestionId)
+        if (questionExpired)
         {
-            await ResetUserStateAsync(user, sendHelloMessage: false);
-            Log.Debug("Question {id} was deleted by the system", user.QuestionId);
+            var askedUser = userStorage.GetOrCreateUser(user.AnswerToChatId.Value);
+            if (user.QuestionId is not null && user.QuestionId == askedUser.CachedAnswerToQuestionId)
+            {
+                await ResetUserStateAsync(askedUser, sendHelloMessage: false);
+                Log.Debug("Question {id} was deleted by the system", user.QuestionId);
+            }
         }
+
+        // Reset answered user state
+        await ResetUserStateAsync(user, sendHelloMessage: false);
     }
 
     public async Task StopAnswerWaitingAsync(MessageDto message, User user)
