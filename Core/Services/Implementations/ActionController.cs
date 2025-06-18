@@ -46,7 +46,7 @@ public class ActionController(
             await botAdapter.SendMessageAsync(user.ChatId, resourceManager.Get(TextRes.Question, question.Text));
             user.State = UserState.InputtingAnswer;
             user.AnswerToChatId = question.AskedBy;
-            user.CachedAnswerQuestionExpiry = question.CreatedAt;
+            user.CachedAnswerQuestionExpiry = question.ExpirationTime;
             user.CachedAnswerToQuestionId = question.Id;
         }
         else
@@ -100,7 +100,7 @@ public class ActionController(
         if (questionExpired)
         {
             var askedUser = userStorage.GetOrCreateUser(user.AnswerToChatId.Value);
-            if (user.QuestionId is not null && user.QuestionId == askedUser.CachedAnswerToQuestionId)
+            if (askedUser.QuestionId is not null && askedUser.QuestionId == user.CachedAnswerToQuestionId)
             {
                 await ResetUserStateAsync(askedUser, sendHelloMessage: false);
                 Log.Debug("Question {id} was deleted by the system", user.QuestionId);
