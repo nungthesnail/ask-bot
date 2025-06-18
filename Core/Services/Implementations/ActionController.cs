@@ -16,11 +16,11 @@ public class ActionController(
         if (user.QuestionId is not null)
         {
             questionStorage.DeleteQuestion(user.QuestionId.Value);
+            user.QuestionId = null;
             await botAdapter.SendMessageAsync(user.ChatId, resourceManager.Get(TextRes.QuestionStopped));
         }
 
-        if (user.AnswerToChatId is not null)
-            user.AnswerToChatId = user.AnswerToChatId.Value;
+        user.AnswerToChatId = null;
 
         if (sendHelloMessage)
             await SendHelloMessageAsync(user);
